@@ -1,0 +1,96 @@
+---
+title: "data_cleaning"
+author: "Hannah Dempsey"
+output: html_document
+---
+
+# Cleaning Rodent Survey Data Sets
+
+Set up:
+
+```{r}
+library(tidyverse)
+```
+
+## Saguaro National Park
+
+Reading in the data set:
+
+```{r}
+saguaro <- read_csv("../data_raw/saguaro_rodents.csv", skip = 5)
+```
+
+Cleaning the dataset:
+
+```{r}
+saguaro_clean <- saguaro %>% 
+  rename(Trap_Check_Date = `Trap Check Date`,
+         Recapture = `Recapture?`,
+         Mass_g = `Mass (g)`,
+         Reprod_Cond = `Reprod. Cond.`,
+         Web_Trap_Number = `Web Trap #`) %>% 
+  separate(Species, c("Genus", "Species"), sep = " ") %>% 
+  mutate(Trap_Check_Date = dmy(Trap_Check_Date),
+         Year = year(Trap_Check_Date),
+         Month = month(Trap_Check_Date),
+         Day = day(Trap_Check_Date),
+         Recapture = toupper(Recapture),
+         Recapture = str_replace(Recapture, "R", "Y"),
+         Recapture = replace_na(Recapture, "N"),
+         Mass_g = as.numeric(Mass_g)) %>% 
+  select(Trap_Check_Date, Year, Month, Day, everything()) %>% 
+  filter(Genus != is.na(Genus)) %>% 
+  filter(Species != "auduboni" & Species != "harrisii") %>% 
+  rename_with(tolower)
+
+saguaro_clean
+write_csv(saguaro_clean, "../data_clean/saguaro_clean.csv")
+```
+
+## Organ Pipe National Monument
+
+Reading in the data sets:
+
+```{r}
+orpi_species_codes <- read_csv("../data_raw/tluRodentSpecies.csv")
+orpi_data <- read_csv("../data_raw/RodentDetail.csv")
+orpi_surveys <- read_csv("../data_raw/RodentSurvey.csv")
+```
+
+Cleaning the data sets:
+
+```{r}
+orpi_species_codes <- orpi_species_codes %>% 
+  select(-5) %>% 
+  rename_with(tolower) %>% 
+  rename(rodent_species_id = id,
+         species_code = speciescode) %>% 
+  separate(genusspecies, c("genus", "species"), sep = " ")
+
+orpi_surveys <- orpi_surveys %>% 
+  rename_with(tolower) %>% 
+  select(-6, -9, -11, -12, -13, -14, -15) %>% 
+  rename(rodent_survey_id = id,
+         site_id = siteid,
+         start_date = startdate,
+         end_date = enddate,
+         num_traps = numtraps)
+
+orpi_clean <- orpi_data %>% 
+  rename_with(tolower) %>% 
+  select(1:3, 9:10) %>%
+  rename(rodent_survey_id = rodentsurveyid,
+         rodent_species_id = rodentspeciesid) %>% 
+  left_join(orpi_species_codes, join_by(rodent_species_id)) %>% 
+  left_join(orpi_surveys, join_by(rodent_survey_id))
+
+orpi_clean
+write_csv(orpi_clean, "../data_clean/orpi_clean.csv")
+```
+
+```{r}
+orpi_species_codes %>% 
+  rename_with(tolower) %>% 
+  rename(rodent_species_id = id,
+         species_code = speciescode)
+```

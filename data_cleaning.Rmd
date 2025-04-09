@@ -1,0 +1,47 @@
+---
+title: "data_cleaning"
+author: "Hannah Dempsey"
+output: html_document
+---
+
+# Cleaning Rodent Survey Datasets
+
+Set up:
+
+```{r}
+library(tidyverse)
+```
+
+## Saguaro National Park
+
+Reading in the dataset:
+
+```{r}
+saguaro <- read_csv("../data_raw/saguaro_rodents.csv", skip = 5)
+```
+
+Cleaning the dataset:
+
+```{r}
+saguaro_clean <- saguaro %>% 
+  rename(Trap_Check_Date = `Trap Check Date`,
+         Recapture = `Recapture?`,
+         Mass_g = `Mass (g)`,
+         Reprod_Cond = `Reprod. Cond.`,
+         Web_Trap_Number = `Web Trap #`) %>% 
+  separate(Species, c("Genus", "Species"), sep = " ") %>% 
+  mutate(Trap_Check_Date = dmy(Trap_Check_Date),
+         Year = year(Trap_Check_Date),
+         Month = month(Trap_Check_Date),
+         Day = day(Trap_Check_Date),
+         Recapture = toupper(Recapture),
+         Recapture = str_replace(Recapture, "R", "Y"),
+         Recapture = replace_na(Recapture, "N"),
+         Mass_g = as.numeric(Mass_g)) %>% 
+  select(Trap_Check_Date, Year, Month, Day, everything()) %>% 
+  filter(Genus != is.na(Genus)) %>% 
+  filter(Species != "auduboni" & Species != "harrisii")
+
+saguaro_clean
+write_csv(saguaro_clean, "../data_clean/saguaro_clean.csv")
+```
