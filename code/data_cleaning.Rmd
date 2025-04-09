@@ -86,4 +86,5 @@ orpi_clean <- orpi_data %>%
 
 orpi_clean
 write_csv(orpi_clean, "../data_clean/orpi_clean.csv")
+write_csv(orpi_surveys, "../data_clean/orpi_surveys.csv")
 ```
