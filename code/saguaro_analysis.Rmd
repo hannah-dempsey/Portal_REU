@@ -3,3 +3,115 @@ title: "saguaro_analysis"
 author: "Hannah Dempsey"
 output: github_document
 ---
+
+# Saguaro National Park Analysis
+
+Set up:
+
+```{r}
+library(tidyverse)
+saguaro_clean <- read_csv("../data_clean/saguaro_clean.csv")
+```
+
+### Abundance Data
+
+Summarize the data by year:
+
+```{r}
+survey_nights <- saguaro_clean %>% 
+  group_by(year) %>% 
+  distinct(trap_check_date) %>% 
+  summarize(nights = n())
+survey_nights
+```
+
+Calculate the annual abundance for each species per trapnight:
+
+```{r}
+#148 traps used per night
+rodents_per_trapnight <- saguaro_clean %>% 
+  filter(recapture == "N") %>% 
+  group_by(year, species) %>% 
+  summarize(abundance = n()) %>% 
+  left_join(survey_nights) %>% 
+  mutate(trap_nights = nights * 148,
+         abund_per_trapnight = abundance / trap_nights)
+rodents_per_trapnight
+
+#save dataframe for comparison
+write_csv(rodents_per_trapnight, "../data_clean/saguaro_abund_trapnights.csv")
+```
+
+Plotting abundance per trapnight:
+
+```{r}
+saguaro_abundance <- ggplot(rodents_per_trapnight, aes(x = year, y = abund_per_trapnight)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~ species) +
+  labs(y = "Rodent Abundance per Trapnight (g)", x = "Year", title = "Saguaro National Park") +
+  theme_bw()
+saguaro_abundance
+ggsave("../figures/saguaro_abundance.png")
+```
+
+### Biomass Data
+
+Calculating average mass for each species:
+
+```{r}
+rodent_mass <- saguaro_clean %>% 
+  group_by(species) %>% 
+  summarize(avg_mass_g = mean(mass_g, na.rm = TRUE))
+rodent_mass
+```
+
+Calculate annual biomass of each species:
+
+```{r}
+biomass_annual <- rodents_per_trapnight %>% 
+  inner_join(rodent_mass, join_by(species)) %>% 
+  group_by(year, species) %>% 
+  summarize(biomass_g = abund_per_trapnight * avg_mass_g)
+biomass_annual
+
+#save dataframe for comparison
+write_csv(biomass_annual, "../data_clean/saguaro_biomass.csv")
+```
+
+Plotting annual biomass of each species:
+
+```{r}
+saguaro_biomass <- ggplot(biomass_annual, aes(x = year, y = biomass_g)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~species) +
+  labs(y = "Biomass (g)", x = "Year", title = "Saguaro National Park") +
+  theme_bw()
+saguaro_biomass
+ggsave("../figures/saguaro_biomass.png")
+```
+
+Calculating annual community biomass:
+
+```{r}
+total_biomass_annual <- biomass_annual %>% 
+  group_by(year) %>% 
+  summarize(biomass_g = sum(biomass_g))
+total_biomass_annual
+
+#save dataframe for comparison
+write_csv(total_biomass_annual, "../data_clean/saguaro_total_biomass.csv")
+```
+
+Plotting annual community biomass:
+
+```{r}
+saguaro_total_biomass <- ggplot(total_biomass_annual, aes(x = year, y = biomass_g)) +
+  geom_point() +
+  geom_line() +
+  labs(y = "Total Biomass (g)", x = "Year", title = "Saguaro National Park") +
+  theme_bw()
+saguaro_total_biomass
+ggsave("../figures/saguaro_total_biomass.png")
+```
