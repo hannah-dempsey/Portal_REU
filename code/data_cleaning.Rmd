@@ -1,10 +1,10 @@
 ---
 title: "data_cleaning"
 author: "Hannah Dempsey"
-output: html_document
+output: github_document
 ---
 
-# Cleaning Rodent Survey Data Sets
+# Cleaning Rodent Survey Datasets
 
 Set up:
 
@@ -14,7 +14,7 @@ library(tidyverse)
 
 ## Saguaro National Park
 
-Reading in the data set:
+Reading in the dataset:
 
 ```{r}
 saguaro <- read_csv("../data_raw/saguaro_rodents.csv", skip = 5)
@@ -49,7 +49,7 @@ write_csv(saguaro_clean, "../data_clean/saguaro_clean.csv")
 
 ## Organ Pipe National Monument
 
-Reading in the data sets:
+Reading in the datasets:
 
 ```{r}
 orpi_species_codes <- read_csv("../data_raw/tluRodentSpecies.csv")
@@ -57,7 +57,7 @@ orpi_data <- read_csv("../data_raw/RodentDetail.csv")
 orpi_surveys <- read_csv("../data_raw/RodentSurvey.csv")
 ```
 
-Cleaning the data sets:
+Cleaning the datasets:
 
 ```{r}
 orpi_species_codes <- orpi_species_codes %>% 
@@ -86,11 +86,4 @@ orpi_clean <- orpi_data %>%
 
 orpi_clean
 write_csv(orpi_clean, "../data_clean/orpi_clean.csv")
-```
-
-```{r}
-orpi_species_codes %>% 
-  rename_with(tolower) %>% 
-  rename(rodent_species_id = id,
-         species_code = speciescode)
 ```
