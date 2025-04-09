@@ -1,0 +1,16 @@
+---
+title: "portal_analysis"
+author: "Hannah Dempsey"
+output: github_document
+---
+
+# Portal Analysis
+
+Set up:
+
+```{r}
+library(tidyverse)
+library(portalr, use_default_data_path("../data_raw/"))
+```
+
+### Abundance Data
