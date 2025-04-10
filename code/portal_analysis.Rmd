@@ -10,10 +10,14 @@ Set up:
 
 ```{r}
 library(tidyverse)
-library(portalr, use_default_data_path("../data_raw/"))
+library(portalr)
 
 #loading in portal data using portalr package
 portal <- abundance(effort = T, level = "Treatment", type = "Rodents", shape = "Flat")
+
+#limit to control treatments
+portal <- portal %>% 
+  filter(treatment == "control")
 
 data_tables <- load_rodent_data()
 species <- data_tables$species_table
@@ -81,5 +85,60 @@ portal %>%
   geom_line() +
   facet_wrap(~species) +
   labs(x = "Year", y = "Rodent Abundance per Trapnight", title = "Portal Project") +
+  theme_bw()
+```
+
+### Biomass Data
+
+Adding average mass for each species:
+
+```{r}
+portal <- species %>% 
+  select(1, 13) %>% 
+  right_join(portal, join_by(species)) %>% 
+  rename(avg_mass_g = meanwgt)
+portal
+```
+
+Calculate the biomass of each species:
+
+```{r}
+biomass <- portal %>% 
+  group_by(year, month, species) %>% 
+  summarize(biomass_g = abund_per_trapnight * avg_mass_g) %>%
+  unite(date, year:month, sep = "-") %>% 
+  mutate(date = ym(date))
+biomass
+```
+
+Plotting biomass of each species
+
+```{r}
+biomass %>% 
+  filter(biomass_g != 0) %>% 
+ggplot(., aes(x = date, y = biomass_g)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~species, ncol = 3) +
+  labs(y = "Biomass (g)", x = "Year", title = "Portal Project") +
+  theme_bw()
+```
+
+Calculating community biomass
+
+```{r}
+total_biomass <- biomass %>% 
+  group_by(date) %>% 
+  summarize(biomass_g = sum(biomass_g))
+total_biomass
+```
+
+Plotting community biomass
+
+```{r}
+ggplot(total_biomass, aes(x = date, y = biomass_g)) +
+  geom_point() +
+  geom_line() +
+  labs(y = "Biomass (g)", x = "Year", title = "Portal Project") +
   theme_bw()
 ```
