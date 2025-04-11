@@ -4,7 +4,7 @@ Repository for my internship with the Portal Project
 
 ### File Structure
 
-Code: folder containing all coding documents
+code: folder containing all coding documents
 
 -   data_cleaning contains the code to clean each of the datasets
 
