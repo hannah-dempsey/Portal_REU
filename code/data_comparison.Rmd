@@ -183,3 +183,70 @@ all_total_biomass %>%
   theme_bw()
 ggsave("../figures/saguaro_orpi_total_biomass.png")
 ```
+
+### Abundance Data
+
+Loading in datasets:
+
+```{r}
+saguaro_abund <- read_csv("../data_clean/saguaro_abund_trapnights.csv")
+orpi_abund <- read_csv("../data_clean/orpi_abund_trapnights.csv")
+portal_abund <- read_csv("../data_clean/portal_abund_trapnights.csv")
+
+#removing superfluous columns
+saguaro_abund <- saguaro_abund %>% 
+  select(1, 2, 6)
+saguaro_abund
+
+orpi_abund <- orpi_abund %>% 
+  select(1, 2, 5)
+orpi_abund
+
+portal_abund <- portal_abund %>% 
+  select(1, 2, 5)
+portal_abund
+
+#adding site column to each dataframe
+saguaro_abund <- saguaro_abund %>% 
+  mutate(site = "Saguaro")
+saguaro_abund
+
+orpi_abund <- orpi_abund %>% 
+   mutate(site = "Organ Pipe")
+orpi_abund
+
+portal_abund <- portal_abund %>% 
+   mutate(site = "Portal")
+portal_abund
+```
+
+Modifying Portal's species column to match:
+
+```{r}
+portal_abund <- portal_abund %>% 
+  left_join(adjusted_portal_species, join_by(species)) %>% 
+  select(1, 5, 3, 4) %>% 
+  rename(species = species_name)
+portal_abund
+```
+
+Bind dataframes into one
+
+```{r}
+all_abund <- bind_rows(saguaro_abund, orpi_abund, portal_abund)
+all_abund
+```
+
+Plotting abundance of each species:
+
+```{r}
+all_abund %>% 
+  filter(species %in% c("albigula", "amplus", "baileyi", "eremicus", "intermedius", "maniculatus", "merriami", "spectabilis", "torridus")) %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    facet_wrap(~species, scales = "free_y") +
+    labs(y = "Abundance per Trapnight", x = "Year") +
+    theme_bw()
+ggsave("../figures/all_abund.png")
+```

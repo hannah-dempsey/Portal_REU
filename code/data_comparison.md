@@ -543,3 +543,242 @@ ggsave("../figures/saguaro_orpi_total_biomass.png")
 ```
 
     ## Saving 7 x 5 in image
+
+### Abundance Data
+
+Loading in datasets:
+
+``` r
+saguaro_abund <- read_csv("../data_clean/saguaro_abund_trapnights.csv")
+```
+
+    ## Rows: 80 Columns: 6
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr (1): species
+    ## dbl (5): year, abundance, nights, trap_nights, abund_per_trapnight
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+``` r
+orpi_abund <- read_csv("../data_clean/orpi_abund_trapnights.csv")
+```
+
+    ## Rows: 290 Columns: 5
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr (1): species
+    ## dbl (4): year, abundance, trap_nights, abund_per_trapnight
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+``` r
+portal_abund <- read_csv("../data_clean/portal_abund_trapnights.csv")
+```
+
+    ## Rows: 945 Columns: 5
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr (1): species
+    ## dbl (4): year, abundance, effort, abund_per_trapnight
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+``` r
+#removing superfluous columns
+saguaro_abund <- saguaro_abund %>% 
+  select(1, 2, 6)
+saguaro_abund
+```
+
+    ## # A tibble: 80 × 3
+    ##     year species      abund_per_trapnight
+    ##    <dbl> <chr>                      <dbl>
+    ##  1  1991 albigula                 0.0101 
+    ##  2  1991 amplus                   0.0101 
+    ##  3  1991 baileyi                  0.00338
+    ##  4  1991 eremicus                 0.00338
+    ##  5  1991 merriami                 0.0709 
+    ##  6  1991 penicillatus             0.0777 
+    ##  7  1992 albigula                 0.00338
+    ##  8  1992 amplus                   0.00676
+    ##  9  1992 baileyi                  0.0473 
+    ## 10  1992 merriami                 0.128  
+    ## # ℹ 70 more rows
+
+``` r
+orpi_abund <- orpi_abund %>% 
+  select(1, 2, 5)
+orpi_abund
+```
+
+    ## # A tibble: 290 × 3
+    ##     year species      abund_per_trapnight
+    ##    <dbl> <chr>                      <dbl>
+    ##  1  1991 albigula                 0.0408 
+    ##  2  1991 amplus                   0.0641 
+    ##  3  1991 arizonae                 0.00292
+    ##  4  1991 baileyi                  0.0146 
+    ##  5  1991 eremicus                 0.0627 
+    ##  6  1991 intermedius              0.00583
+    ##  7  1991 merriami                 0.156  
+    ##  8  1991 penicillatus             0.386  
+    ##  9  1992 albigula                 0.0641 
+    ## 10  1992 amplus                   0.0787 
+    ## # ℹ 280 more rows
+
+``` r
+portal_abund <- portal_abund %>% 
+  select(1, 2, 5)
+portal_abund
+```
+
+    ## # A tibble: 945 × 3
+    ##     year species abund_per_trapnight
+    ##    <dbl> <chr>                 <dbl>
+    ##  1  1979 BA                   0     
+    ##  2  1979 DM                   0.340 
+    ##  3  1979 DO                   0.0544
+    ##  4  1979 DS                   0.252 
+    ##  5  1979 OL                   0.0816
+    ##  6  1979 OT                   0.156 
+    ##  7  1979 PB                   0     
+    ##  8  1979 PE                   0.0136
+    ##  9  1979 PF                   0.0136
+    ## 10  1979 PH                   0     
+    ## # ℹ 935 more rows
+
+``` r
+#adding site column to each dataframe
+saguaro_abund <- saguaro_abund %>% 
+  mutate(site = "Saguaro")
+saguaro_abund
+```
+
+    ## # A tibble: 80 × 4
+    ##     year species      abund_per_trapnight site   
+    ##    <dbl> <chr>                      <dbl> <chr>  
+    ##  1  1991 albigula                 0.0101  Saguaro
+    ##  2  1991 amplus                   0.0101  Saguaro
+    ##  3  1991 baileyi                  0.00338 Saguaro
+    ##  4  1991 eremicus                 0.00338 Saguaro
+    ##  5  1991 merriami                 0.0709  Saguaro
+    ##  6  1991 penicillatus             0.0777  Saguaro
+    ##  7  1992 albigula                 0.00338 Saguaro
+    ##  8  1992 amplus                   0.00676 Saguaro
+    ##  9  1992 baileyi                  0.0473  Saguaro
+    ## 10  1992 merriami                 0.128   Saguaro
+    ## # ℹ 70 more rows
+
+``` r
+orpi_abund <- orpi_abund %>% 
+   mutate(site = "Organ Pipe")
+orpi_abund
+```
+
+    ## # A tibble: 290 × 4
+    ##     year species      abund_per_trapnight site      
+    ##    <dbl> <chr>                      <dbl> <chr>     
+    ##  1  1991 albigula                 0.0408  Organ Pipe
+    ##  2  1991 amplus                   0.0641  Organ Pipe
+    ##  3  1991 arizonae                 0.00292 Organ Pipe
+    ##  4  1991 baileyi                  0.0146  Organ Pipe
+    ##  5  1991 eremicus                 0.0627  Organ Pipe
+    ##  6  1991 intermedius              0.00583 Organ Pipe
+    ##  7  1991 merriami                 0.156   Organ Pipe
+    ##  8  1991 penicillatus             0.386   Organ Pipe
+    ##  9  1992 albigula                 0.0641  Organ Pipe
+    ## 10  1992 amplus                   0.0787  Organ Pipe
+    ## # ℹ 280 more rows
+
+``` r
+portal_abund <- portal_abund %>% 
+   mutate(site = "Portal")
+portal_abund
+```
+
+    ## # A tibble: 945 × 4
+    ##     year species abund_per_trapnight site  
+    ##    <dbl> <chr>                 <dbl> <chr> 
+    ##  1  1979 BA                   0      Portal
+    ##  2  1979 DM                   0.340  Portal
+    ##  3  1979 DO                   0.0544 Portal
+    ##  4  1979 DS                   0.252  Portal
+    ##  5  1979 OL                   0.0816 Portal
+    ##  6  1979 OT                   0.156  Portal
+    ##  7  1979 PB                   0      Portal
+    ##  8  1979 PE                   0.0136 Portal
+    ##  9  1979 PF                   0.0136 Portal
+    ## 10  1979 PH                   0      Portal
+    ## # ℹ 935 more rows
+
+Modifying Portal’s species column to match:
+
+``` r
+portal_abund <- portal_abund %>% 
+  left_join(adjusted_portal_species, join_by(species)) %>% 
+  select(1, 5, 3, 4) %>% 
+  rename(species = species_name)
+portal_abund
+```
+
+    ## # A tibble: 945 × 4
+    ##     year species     abund_per_trapnight site  
+    ##    <dbl> <chr>                     <dbl> <chr> 
+    ##  1  1979 taylori                  0      Portal
+    ##  2  1979 merriami                 0.340  Portal
+    ##  3  1979 ordii                    0.0544 Portal
+    ##  4  1979 spectabilis              0.252  Portal
+    ##  5  1979 leucogaster              0.0816 Portal
+    ##  6  1979 torridus                 0.156  Portal
+    ##  7  1979 baileyi                  0      Portal
+    ##  8  1979 eremicus                 0.0136 Portal
+    ##  9  1979 flavus                   0.0136 Portal
+    ## 10  1979 C.hispidus               0      Portal
+    ## # ℹ 935 more rows
+
+Bind dataframes into one
+
+``` r
+all_abund <- bind_rows(saguaro_abund, orpi_abund, portal_abund)
+all_abund
+```
+
+    ## # A tibble: 1,315 × 4
+    ##     year species      abund_per_trapnight site   
+    ##    <dbl> <chr>                      <dbl> <chr>  
+    ##  1  1991 albigula                 0.0101  Saguaro
+    ##  2  1991 amplus                   0.0101  Saguaro
+    ##  3  1991 baileyi                  0.00338 Saguaro
+    ##  4  1991 eremicus                 0.00338 Saguaro
+    ##  5  1991 merriami                 0.0709  Saguaro
+    ##  6  1991 penicillatus             0.0777  Saguaro
+    ##  7  1992 albigula                 0.00338 Saguaro
+    ##  8  1992 amplus                   0.00676 Saguaro
+    ##  9  1992 baileyi                  0.0473  Saguaro
+    ## 10  1992 merriami                 0.128   Saguaro
+    ## # ℹ 1,305 more rows
+
+Plotting abundance of each species:
+
+``` r
+all_abund %>% 
+  filter(species %in% c("albigula", "amplus", "baileyi", "eremicus", "intermedius", "maniculatus", "merriami", "spectabilis", "torridus")) %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    facet_wrap(~species, scales = "free_y") +
+    labs(y = "Abundance per Trapnight", x = "Year") +
+    theme_bw()
+```
+
+![](data_comparison_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+
+``` r
+ggsave("../figures/all_abund.png")
+```
+
+    ## Saving 7 x 5 in image
