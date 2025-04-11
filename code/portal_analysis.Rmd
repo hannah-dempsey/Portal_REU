@@ -11,5 +11,86 @@ Set up:
 ```{r}
 library(tidyverse)
 portal_abund <- read_csv("../data_clean/portal_abund.csv")
-portal_indiv <- read_csv("../data_clean/portal_indiv.csv")
+```
+
+### Abundance Data
+
+Calculate the annual abundance for each species per trapnight:
+
+```{r}
+rodents_per_trapnight <- portal_abund %>% 
+  group_by(year, species) %>% 
+  summarize(abundance = sum(abundance, na.rm = T),
+            effort = sum(effort, na.rm = T)) %>% 
+  mutate(abund_per_trapnight = abundance / effort)
+rodents_per_trapnight
+
+#save dataframe for comparison
+write_csv(rodents_per_trapnight, "../data_clean/portal_abund_trapnights.csv")
+```
+
+Plotting abundance per trapnight:
+
+```{r}
+portal_abundance <- ggplot(rodents_per_trapnight, aes(x = year, y = abund_per_trapnight)) +
+  geom_point(size = 0.5) +
+  geom_line() +
+  facet_wrap(~ species) +
+  labs(y = "Rodent Abundance per Trapnight", x = "Year", title = "Portal Project") +
+  theme_bw()
+portal_abundance
+ggsave("../figures/portal_abundance.png")
+```
+
+### Biomass Data
+
+Calculate the annual biomass of each species:
+
+```{r}
+biomass_annual <- portal_abund %>% 
+  select(species, avg_weight_g) %>% 
+  right_join(rodents_per_trapnight, join_by(species)) %>% 
+  select(3, 1:2, 6) %>% 
+  mutate(biomass_g = abund_per_trapnight * avg_weight_g)
+biomass_annual
+
+#save dataframe for comparison
+write_csv(biomass_annual, "../data_clean/portal_biomass.csv")
+```
+
+Plotting annual biomass of each species:
+
+```{r}
+portal_biomass <- ggplot(biomass_annual, aes(x = year, y = biomass_g)) +
+  geom_point(size = 0.5) +
+  geom_line() +
+  facet_wrap(~species) +
+  labs(y = "Biomass (g)", x = "Year", title = "Portal Project") +
+  theme_bw()
+portal_biomass
+ggsave("../figures/portal_biomass.png")
+```
+
+Calculating annual community biomass:
+
+```{r}
+total_biomass_annual <- biomass_annual %>% 
+  group_by(year) %>% 
+  summarize(biomass_g = sum(biomass_g))
+total_biomass_annual
+
+#save dataframe for comparison
+write_csv(total_biomass_annual, "../data_clean/portal_total_biomass.csv")
+```
+
+Plotting annual community biomass:
+
+```{r}
+portal_total_biomass <- ggplot(total_biomass_annual, aes(x = year, y = biomass_g)) +
+  geom_point() +
+  geom_line() +
+  labs(y = "Total Biomass (g)", x = "Year", title = "Portal Project") +
+  theme_bw()
+portal_total_biomass
+ggsave("../figures/portal_total_biomass.png")
 ```

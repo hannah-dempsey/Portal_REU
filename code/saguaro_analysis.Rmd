@@ -49,7 +49,7 @@ saguaro_abundance <- ggplot(rodents_per_trapnight, aes(x = year, y = abund_per_t
   geom_point() +
   geom_line() +
   facet_wrap(~ species) +
-  labs(y = "Rodent Abundance per Trapnight (g)", x = "Year", title = "Saguaro National Park") +
+  labs(y = "Rodent Abundance per Trapnight", x = "Year", title = "Saguaro National Park") +
   theme_bw()
 saguaro_abundance
 ggsave("../figures/saguaro_abundance.png")

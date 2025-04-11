@@ -127,7 +127,7 @@ orpi_abundance <- rodents_per_trapnight %>%
   geom_point() +
   geom_line() +
   facet_wrap(~ species) +
-  labs(y = "Rodent Abundance per Trapnight (g)", x = "Year", title = "Organ Pipe National Monument") +
+  labs(y = "Rodent Abundance per Trapnight", x = "Year", title = "Organ Pipe National Monument") +
   theme_bw()
 orpi_abundance
 ```

@@ -21,6 +21,10 @@ library(tidyverse)
     ## ✖ dplyr::lag()    masks stats::lag()
     ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 
+``` r
+library(portalr)
+```
+
 ## Saguaro National Park
 
 Reading in the dataset:
@@ -192,4 +196,84 @@ orpi_clean
 
 ``` r
 write_csv(orpi_clean, "../data_clean/orpi_clean.csv")
+write_csv(orpi_surveys, "../data_clean/orpi_surveys.csv")
+```
+
+## Portal Project
+
+Loading in the datasets:
+
+``` r
+#data acquired using portalr package
+
+#abundance data, limit to control treatments
+portal_abund <- abundance(effort = T, level = "Treatment", type = "Rodents", shape = "Flat")
+```
+
+    ## Loading in data version 5.129.0
+
+``` r
+portal_abund <- portal_abund %>% 
+  filter(treatment == "control")
+
+#loading in ancillary data
+data_tables <- load_rodent_data()
+```
+
+    ## Loading in data version 5.129.0
+
+``` r
+species <- data_tables$species_table
+trapping <- data_tables$trapping_table
+plots <- data_tables$plots_table
+```
+
+Cleaning the abundance data set:
+
+``` r
+#adding species information
+#can't print out this dataset like the others (because it just goes on forever in the knit), bc not tibble??
+portal_abund <- portal_abund %>% 
+  left_join(species, join_by(species)) %>% 
+  mutate(effort = ntraps / nplots) %>% 
+  select(1:9, 18, 21) %>% 
+  rename(scientific_name = scientificname,
+         common_name = commonname,
+         avg_weight_g = meanwgt)
+
+#adding period dates
+period_durations <- trapping %>% 
+  mutate(date = make_date(year = year,
+                         month = month,
+                         day = day)) %>% 
+  select(4:9) %>% 
+  group_by(period) %>% 
+  summarize(start_date = min(date),
+            end_date = max(date))
+period_durations
+```
+
+    ## # A tibble: 524 × 3
+    ##    period start_date end_date  
+    ##     <int> <date>     <date>    
+    ##  1      1 1977-07-16 1977-07-18
+    ##  2      2 1977-08-19 1977-08-21
+    ##  3      3 1977-09-11 1977-09-13
+    ##  4      4 1977-10-16 1977-10-18
+    ##  5      5 1977-11-12 1977-11-14
+    ##  6      6 1977-12-10 1977-12-11
+    ##  7      7 1978-01-08 1978-01-10
+    ##  8      8 1978-02-18 1978-02-20
+    ##  9      9 1978-03-11 1978-03-13
+    ## 10     10 1978-04-08 1978-04-10
+    ## # ℹ 514 more rows
+
+``` r
+portal_abund <- portal_abund %>% 
+  left_join(period_durations, join_by(period)) %>% 
+  mutate(year = year(end_date),
+         month = month(end_date)) %>% 
+  select(14, 15, 1:11)
+
+write_csv(portal_abund, "../data_clean/portal_abund.csv")
 ```
