@@ -226,6 +226,9 @@ data_tables <- load_rodent_data()
 species <- data_tables$species_table
 trapping <- data_tables$trapping_table
 plots <- data_tables$plots_table
+
+species <- write_csv(species, "../data_clean/portal_species.csv")
+trapping <- write_csv(trapping, "../data_clean/portal_trapping.csv")
 ```
 
 Cleaning the abundance data set:

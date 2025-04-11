@@ -1,0 +1,185 @@
+---
+title: "data_comparison"
+author: "Hannah Dempsey"
+output: github_document
+---
+
+# Comparing Field Site Statistics
+
+Set up:
+
+```{r}
+library(tidyverse)
+library(portalr)
+```
+
+### Biomass Data
+
+#### By species:
+
+Adjusting Portal's biomass for multiple surveys per year:
+
+```{r}
+#Loading in data
+portal_biomass <- read_csv("../data_clean/portal_biomass.csv")
+portal_trapping <- read_csv("../data_clean/portal_trapping.csv")
+
+#calculating number of periods per year
+portal_periods <- portal_trapping %>% 
+  group_by(year) %>% 
+  summarize(periods = unique(period))
+portal_periods
+ 
+portal_periods_annual <- portal_periods %>% 
+  group_by(year) %>% 
+  summarize(n_periods = n())
+portal_periods_annual
+
+#dividing biomass by number of periods
+adjusted_portal_biomass <- portal_biomass %>% 
+  inner_join(portal_periods_annual, join_by(year)) %>% 
+  mutate(adjusted_biomass_g = biomass_g / n_periods) %>% 
+  select(1:2, 7) %>% 
+  #renaming so all column names across sites are the same
+  rename(biomass_g = adjusted_biomass_g)
+adjusted_portal_biomass
+```
+
+Modify portal's species column to match:
+
+```{r}
+#load in species data
+portal_species <- read_csv("../data_clean/portal_species.csv")
+
+#distinguish between hispidus spp
+adjusted_portal_species <- portal_species %>% 
+  mutate(scientificname = str_replace(scientificname, "Chaetodipus hispidus", " C.hispidus")) %>% 
+  mutate(scientificname = str_replace(scientificname, "Sigmodon hispidus", " S.hispidus")) %>% 
+  separate(scientificname, c("genus", "species_name"), sep = " ") %>% 
+  select(1, 3)
+adjusted_portal_species
+
+#join to biomass dataframe
+adjusted_portal_biomass <- adjusted_portal_biomass %>% 
+  left_join(adjusted_portal_species, join_by(species)) %>% 
+  select(1, 4, 3) %>% 
+  rename(species = species_name)
+adjusted_portal_biomass
+```
+
+Adding site column to all dataframes:
+
+```{r}
+#loading in the rest of the data
+saguaro_biomass <- read_csv("../data_clean/saguaro_biomass.csv")
+orpi_biomass <- read_csv("../data_clean/orpi_biomass.csv")
+
+#adding site column to each dataframe
+saguaro_biomass <- saguaro_biomass %>% 
+  mutate(site = "Saguaro")
+saguaro_biomass
+
+orpi_biomass <- orpi_biomass %>% 
+   mutate(site = "Organ Pipe")
+orpi_biomass
+
+adjusted_portal_biomass <- adjusted_portal_biomass %>% 
+   mutate(site = "Portal")
+adjusted_portal_biomass
+```
+
+Bind dataframes into one:
+
+```{r}
+all_biomass <- bind_rows(saguaro_biomass, orpi_biomass, adjusted_portal_biomass)
+all_biomass
+```
+
+Plotting annual biomass of each species:
+
+```{r}
+all_biomass %>% 
+  filter(species %in% c("albigula", "amplus", "baileyi", "eremicus", "intermedius", "maniculatus", "merriami", "spectabilis", "torridus")) %>% 
+  ggplot(., aes(x = year, y = biomass_g, color = site)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    facet_wrap(~species, scales = "free_y") +
+    labs(y = "Biomass (g)", x = "Year") +
+    theme_bw()
+ggsave("../figures/all_biomass.png")
+```
+
+#### By community:
+
+Adjusting Portal's biomass for multiple surveys per year:
+
+```{r}
+#loading in data
+portal_total_biomass <- read_csv("../data_clean/portal_total_biomass.csv")
+
+adjusted_portal_total_biomass <- portal_total_biomass %>% 
+  left_join(portal_periods_annual) %>% 
+  mutate(adjusted_biomass_g = biomass_g / n_periods) %>% 
+  select(1, 4) %>% 
+  rename(biomass_g = adjusted_biomass_g)
+adjusted_portal_total_biomass
+```
+
+Adding site column to all dataframes:
+
+```{r}
+#loading in the rest of the data
+saguaro_total_biomass <- read_csv("../data_clean/saguaro_total_biomass.csv")
+orpi_total_biomass <- read_csv("../data_clean/orpi_total_biomass.csv")
+
+#adding site column to each dataframe
+saguaro_total_biomass <- saguaro_total_biomass %>% 
+  mutate(site = "Saguaro")
+saguaro_total_biomass
+
+orpi_total_biomass <- orpi_total_biomass %>% 
+   mutate(site = "Organ")
+orpi_total_biomass
+
+adjusted_portal_total_biomass <- adjusted_portal_total_biomass %>% 
+   mutate(site = "Portal")
+adjusted_portal_total_biomass
+```
+
+Bind dataframes into one:
+
+```{r}
+all_total_biomass <- bind_rows(saguaro_total_biomass, orpi_total_biomass, adjusted_portal_total_biomass)
+```
+
+Plotting community biomass:
+
+```{r}
+#facet_wrapped
+ggplot(all_total_biomass, aes(x = year, y = biomass_g)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~site, scales = "free_y", ncol = 1) +
+  labs(y = "Total Biomass (g)", x = "Year") +
+  theme_bw()
+ggsave("../figures/all_total_biomass.png")
+
+#by color
+ggplot(all_total_biomass, aes(x = year, y = biomass_g, color = site)) +
+  geom_point() +
+  geom_line() +
+  labs(y = "Total Biomass (g)", x = "Year") +
+  theme_bw()
+```
+
+```{r}
+#just saguaro and orpi
+all_total_biomass %>% 
+  filter(site != "Portal") %>% 
+  ggplot(., aes(x = year, y = biomass_g, color = site)) +
+  geom_point() +
+  geom_line() +
+  labs(y = "Total Biomass (g)", x = "Year", title = "Saguaro National Park and Organ Pipe National Monument") +
+  theme_bw()
+ggsave("../figures/saguaro_orpi_total_biomass.png")
+```
