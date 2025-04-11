@@ -10,6 +10,7 @@ Set up:
 
 ```{r}
 library(tidyverse)
+library(portalr)
 ```
 
 ## Saguaro National Park
@@ -87,4 +88,84 @@ orpi_clean <- orpi_data %>%
 orpi_clean
 write_csv(orpi_clean, "../data_clean/orpi_clean.csv")
 write_csv(orpi_surveys, "../data_clean/orpi_surveys.csv")
+```
+
+## Portal Project
+
+Loading in the datasets:
+
+```{r}
+#data acquired using portalr package
+
+#abundance data, limit to control treaatments
+portal_abund <- abundance(effort = T, level = "Treatment", type = "Rodents", shape = "Flat")
+portal_abund <- portal_abund %>% 
+  filter(treatment == "control")
+
+#individual rodent data, limit to control treatments
+portal_indiv <- summarize_individual_rodents() %>% 
+  select(month, day, year, plot, treatment, species, weight = wgt)
+portal_indiv <- portal_indiv %>% 
+  filter(treatment == "control")
+
+#loading in ancillary data
+data_tables <- load_rodent_data()
+species <- data_tables$species_table
+trapping <- data_tables$trapping_table
+plots <- data_tables$plots_table
+```
+
+Cleaning abundance data:
+
+```{r}
+#adding species information
+portal_abund <- portal_abund %>% 
+  left_join(species, join_by(species)) %>% 
+  mutate(effort = ntraps / nplots,
+         abund_per_trapnight = abundance / effort) %>% 
+  select(1:9, 21:22) %>% 
+  rename(scientific_name = scientificname,
+         common_name = commonname)
+portal_abund
+
+#adding period dates
+period_durations <- trapping %>% 
+  mutate(date = make_date(year = year,
+                         month = month,
+                         day = day)) %>% 
+  select(4:9) %>% 
+  group_by(period) %>% 
+  summarize(start_date = min(date),
+            end_date = max(date))
+period_durations
+
+portal_abund <- portal_abund %>% 
+  left_join(period_durations, join_by(period)) %>% 
+  mutate(year = year(end_date),
+         month = month(end_date)) %>% 
+  select(14, 15, 1:11)
+portal_abund
+
+write_csv(portal_abund, "../data_clean/portal_abund.csv")
+```
+
+Cleaning individual rodent data:
+
+```{r}
+#adding species information
+portal_indiv <- portal_indiv %>% 
+  left_join(species, join_by(species)) %>% 
+  select(1:10, 19) %>% 
+  rename(scientific_name = scientificname,
+         common_name = commonname,
+         avg_weight_g = meanwgt)
+portal_indiv
+
+#adding period information
+portal_indiv <- portal_indiv %>% 
+  left_join(trapping, join_by(day, month, year, plot)) %>% 
+  select(1:4, 12, 5:11, 14)
+portal_indiv
+
+write_csv(portal_indiv, "../data_clean/portal_indiv.csv")
 ```
