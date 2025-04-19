@@ -79,6 +79,17 @@ biomass_annual <- rodents_per_trapnight %>%
   summarize(biomass_g = abund_per_trapnight * avg_mass_g)
 biomass_annual
 
+#divide biomass by trapnights
+trap_nights_per_year <- rodents_per_trapnight %>% 
+  group_by(year) %>% 
+  summarize(trap_nights = unique(trap_nights))
+trap_nights_per_year
+
+biomass_annual <- biomass_annual %>% 
+  left_join(trap_nights_per_year, join_by(year)) %>% 
+  mutate(biomass_g = biomass_g / trap_nights)
+biomass_annual
+
 #save dataframe for comparison
 write_csv(biomass_annual, "../data_clean/orpi_biomass.csv")
 ```
