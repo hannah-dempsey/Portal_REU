@@ -54,18 +54,6 @@ biomass_annual <- portal_abund %>%
   mutate(biomass_g = abund_per_trapnight * avg_weight_g)
 biomass_annual
 
-#divide biomass by trapnights
-trap_nights_per_year <- rodents_per_trapnight %>% 
-  group_by(year) %>% 
-  summarize(trap_nights = unique(effort))
-trap_nights_per_year
-
-biomass_annual <- biomass_annual %>% 
-  left_join(trap_nights_per_year, join_by(year)) %>% 
-  mutate(biomass_g = biomass_g / trap_nights) %>% 
-  select(year, species, biomass_g, trap_nights)
-biomass_annual
-
 #save dataframe for comparison
 write_csv(biomass_annual, "../data_clean/portal_biomass.csv")
 ```

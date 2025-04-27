@@ -11,7 +11,6 @@ Set up:
 ```{r}
 library(tidyverse)
 library(portalr)
-library(patchwork)
 ```
 
 ### Biomass Data
@@ -36,6 +35,14 @@ portal_periods_annual <- portal_periods %>%
   summarize(n_periods = n())
 portal_periods_annual
 
+#dividing biomass by number of periods
+adjusted_portal_biomass <- portal_biomass %>% 
+  inner_join(portal_periods_annual, join_by(year)) %>% 
+  mutate(adjusted_biomass_g = biomass_g / n_periods) %>% 
+  select(1:2, 7) %>% 
+  #renaming so all column names across sites are the same
+  rename(biomass_g = adjusted_biomass_g)
+adjusted_portal_biomass
 ```
 
 Modify portal's species column to match:
@@ -53,12 +60,11 @@ adjusted_portal_species <- portal_species %>%
 adjusted_portal_species
 
 #join to biomass dataframe
-portal_biomass <- portal_biomass %>% 
+adjusted_portal_biomass <- adjusted_portal_biomass %>% 
   left_join(adjusted_portal_species, join_by(species)) %>% 
-  select(1, 5, 3) %>% 
-  #renaming column so that names are consistent
+  select(1, 4, 3) %>% 
   rename(species = species_name)
-portal_biomass
+adjusted_portal_biomass
 ```
 
 Adding site column to all dataframes:
@@ -70,23 +76,22 @@ orpi_biomass <- read_csv("../data_clean/orpi_biomass.csv")
 
 #adding site column to each dataframe
 saguaro_biomass <- saguaro_biomass %>% 
-  mutate(site = "Saguaro National Park")
+  mutate(site = "Saguaro")
 saguaro_biomass
 
 orpi_biomass <- orpi_biomass %>% 
-   mutate(site = "Organ Pipe National Monument")
+   mutate(site = "Organ Pipe")
 orpi_biomass
 
-portal_biomass <- portal_biomass %>% 
-   mutate(site = "Portal Project")
-portal_biomass
+adjusted_portal_biomass <- adjusted_portal_biomass %>% 
+   mutate(site = "Portal")
+adjusted_portal_biomass
 ```
 
 Bind dataframes into one:
 
 ```{r}
-all_biomass <- bind_rows(saguaro_biomass, orpi_biomass, portal_biomass) %>% 
-  select(-4)
+all_biomass <- bind_rows(saguaro_biomass, orpi_biomass, adjusted_portal_biomass)
 all_biomass
 ```
 
@@ -129,23 +134,22 @@ orpi_total_biomass <- read_csv("../data_clean/orpi_total_biomass.csv")
 
 #adding site column to each dataframe
 saguaro_total_biomass <- saguaro_total_biomass %>% 
-  mutate(site = "Saguaro National Park")
+  mutate(site = "Saguaro")
 saguaro_total_biomass
 
 orpi_total_biomass <- orpi_total_biomass %>% 
-   mutate(site = "Organ Pipe National Monument")
+   mutate(site = "Organ")
 orpi_total_biomass
 
-portal_total_biomass <- portal_total_biomass %>% 
-   mutate(site = "Portal Project")
-portal_total_biomass
+adjusted_portal_total_biomass <- adjusted_portal_total_biomass %>% 
+   mutate(site = "Portal")
+adjusted_portal_total_biomass
 ```
 
 Bind dataframes into one:
 
 ```{r}
-all_total_biomass <- bind_rows(saguaro_total_biomass, orpi_total_biomass, portal_total_biomass)
-all_total_biomass
+all_total_biomass <- bind_rows(saguaro_total_biomass, orpi_total_biomass, adjusted_portal_total_biomass)
 ```
 
 Plotting community biomass:
@@ -166,42 +170,12 @@ ggplot(all_total_biomass, aes(x = year, y = biomass_g, color = site)) +
   geom_line() +
   labs(y = "Total Biomass (g)", x = "Year") +
   theme_bw()
-
-
-
-
-
-
-
-
-#testing some bullshit
-saguaro <- ggplot(saguaro_total_biomass, aes(x = year, y = biomass_g)) +
-  geom_point() +
-  geom_line() +
-  ylim(0, 0.2) +
-  labs(y = "Total Biomass (g)", x = "Year", title = "Saguaro National Park") +
-  theme_bw()
-
-orpi <- ggplot(orpi_total_biomass, aes(x = year, y = biomass_g)) +
-  geom_point() +
-  geom_line() +
-  ylim(0, 0.2) +
-  labs(y = "Total Biomass (g)", x = "Year", title = "Organ Pipe National Monument") +
-  theme_bw()
-
-portal <- ggplot(portal_total_biomass, aes(x = year, y = biomass_g)) +
-  geom_point() +
-  geom_line() +
-  labs(y = "Total Biomass (g)", x = "Year", title = "Portal Project") +
-  theme_bw()
-
-saguaro / orpi / portal & scale_x_continuous(limits = c(1979, 2022))
 ```
 
 ```{r}
 #just saguaro and orpi
 all_total_biomass %>% 
-  filter(site != "Portal Project") %>% 
+  filter(site != "Portal") %>% 
   ggplot(., aes(x = year, y = biomass_g, color = site)) +
   geom_point() +
   geom_line() +
