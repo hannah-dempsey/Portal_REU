@@ -10,6 +10,7 @@ Set up:
 
 ```{r}
 library(tidyverse)
+library(portalr)
 portal_abund <- read_csv("../data_clean/portal_abund.csv")
 ```
 
@@ -93,4 +94,40 @@ portal_total_biomass <- ggplot(total_biomass_annual, aes(x = year, y = biomass_g
   theme_bw()
 portal_total_biomass
 ggsave("../figures/portal_total_biomass.png")
+```
+
+### Weather Analysis
+
+Read in the weather data
+
+```{r}
+weather_data <- weather("Monthly")
+```
+
+Summarize annual statistics
+
+```{r}
+weather_avg <- weather_data %>% 
+  group_by(year) %>% 
+  summarize(avg_mintemp = mean(mintemp, na.rm = T),
+            avg_maxtemp = mean(maxtemp, na.rm = T),
+            avg_meantemp = mean(meantemp, na.rm = T),
+            avg_precip = mean(precipitation, na.rm = T))
+weather_avg
+```
+
+Graphing weather:
+
+```{r}
+ggplot(weather_avg, aes(x = year, y = avg_precip)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "Year", y = "Average Precipitation", title = "Portal Project") +
+  theme_bw()
+
+ggplot(weather_avg, aes(x = year, y = avg_meantemp)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "Year", y = "Average Temperature", title = "Portal Project") +
+  theme_bw()
 ```
