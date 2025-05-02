@@ -11,6 +11,7 @@ Set up:
 ```{r}
 library(tidyverse)
 library(portalr)
+library(patchwork)
 portal_abund <- read_csv("../data_clean/portal_abund.csv")
 ```
 
@@ -101,7 +102,7 @@ ggsave("../figures/portal_total_biomass.png")
 Read in the weather data
 
 ```{r}
-weather_data <- weather("Monthly")
+weather_data <- weather("Monthly", fill = T)
 ```
 
 Summarize annual statistics
@@ -112,7 +113,8 @@ weather_avg <- weather_data %>%
   summarize(avg_mintemp = mean(mintemp, na.rm = T),
             avg_maxtemp = mean(maxtemp, na.rm = T),
             avg_meantemp = mean(meantemp, na.rm = T),
-            avg_precip = mean(precipitation, na.rm = T))
+            avg_precip = mean(precipitation, na.rm = T)) %>% 
+  filter(year <= 2024)
 weather_avg
 ```
 
@@ -125,9 +127,61 @@ ggplot(weather_avg, aes(x = year, y = avg_precip)) +
   labs(x = "Year", y = "Average Precipitation", title = "Portal Project") +
   theme_bw()
 
-ggplot(weather_avg, aes(x = year, y = avg_meantemp)) +
+avg_temp <- ggplot(weather_avg, aes(x = year, y = avg_meantemp)) +
   geom_point() +
   geom_line() +
   labs(x = "Year", y = "Average Temperature", title = "Portal Project") +
   theme_bw()
+avg_temp
+
+#plotting biomass with temperature
+ggplot(data = total_biomass_annual) +
+  geom_point(mapping = aes(x = year, y = biomass_g),
+             color = "blue",
+             alpha = 0.7) +
+  geom_line(mapping = aes(x = year, y = biomass_g),
+            color = "blue",
+            alpha = 0.7) +
+  geom_point(data = weather_avg,
+             mapping = aes(x = year, y = avg_precip *1500),
+             color = "red",
+             alpha = 0.7) +
+  geom_line(data = weather_avg,
+             mapping = aes(x = year, y = avg_precip * 1500),
+            color = "red",
+            alpha = 0.7) +
+  labs(x = "Year", title = "Portal Project") +
+  scale_y_continuous(name = "Total Biomass (g)",
+                     sec.axis = sec_axis(trans = ~.*1500, name = "Average Precipitation")) +
+  theme_bw()
+
+```
+
+Creating comparison graph function:
+
+```{r}
+weather_ecol <- function(ecol, e_y, weather, w_y, num) {
+  graph <- ggplot(data = ecol) +
+    geom_point(mapping = aes(x = year, y = {{e_y}}),
+             color = "blue",
+             alpha = 0.7) +
+    geom_line(mapping = aes(x = year, y = {{e_y}}),
+            color = "blue",
+            alpha = 0.7) +
+    geom_point(data = weather,
+             mapping = aes(x = year, y = {{w_y}} *num),
+             color = "red",
+             alpha = 0.7) +
+    geom_line(data = weather,
+             mapping = aes(x = year, y = {{w_y}} *num),
+            color = "red",
+            alpha = 0.7) +
+    labs(x = "Year") +
+    scale_y_continuous(name = "e_y",
+                       sec.axis = sec_axis(trans = ~.*num, name = "w_y")) +
+    theme_bw()
+  return(graph)
+}
+
+weather_ecol(total_biomass_annual, biomass_g, weather_avg, avg_meantemp, 2500)
 ```
