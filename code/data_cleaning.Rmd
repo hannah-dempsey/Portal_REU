@@ -144,3 +144,24 @@ portal_abund <- portal_abund %>%
 
 write_csv(portal_abund, "../data_clean/portal_abund.csv")
 ```
+
+## Jornada Basin
+
+Loading in the dataset:
+
+```{r}
+jornada <- read.csv("../data_raw/JRNStudy_086_smes_rodent_trapping_data.csv")
+```
+
+Cleaning the dataset:
+
+```{r}
+jornada_clean <- jornada %>% 
+  select(1:12) %>% 
+  filter(recap == "N") %>% 
+  rename(weight_g = weight,
+         species = spp) %>% 
+  mutate(date = ymd(date))
+
+write_csv(jornada_clean, "../data_clean/jornada_clean.csv")
+```

@@ -121,11 +121,12 @@ weather_avg
 Graphing weather:
 
 ```{r}
-ggplot(weather_avg, aes(x = year, y = avg_precip)) +
+avg_precip <- ggplot(weather_avg, aes(x = year, y = avg_precip)) +
   geom_point() +
   geom_line() +
   labs(x = "Year", y = "Average Precipitation", title = "Portal Project") +
   theme_bw()
+avg_precip
 
 avg_temp <- ggplot(weather_avg, aes(x = year, y = avg_meantemp)) +
   geom_point() +
@@ -133,28 +134,12 @@ avg_temp <- ggplot(weather_avg, aes(x = year, y = avg_meantemp)) +
   labs(x = "Year", y = "Average Temperature", title = "Portal Project") +
   theme_bw()
 avg_temp
+```
 
-#plotting biomass with temperature
-ggplot(data = total_biomass_annual) +
-  geom_point(mapping = aes(x = year, y = biomass_g),
-             color = "blue",
-             alpha = 0.7) +
-  geom_line(mapping = aes(x = year, y = biomass_g),
-            color = "blue",
-            alpha = 0.7) +
-  geom_point(data = weather_avg,
-             mapping = aes(x = year, y = avg_precip *1500),
-             color = "red",
-             alpha = 0.7) +
-  geom_line(data = weather_avg,
-             mapping = aes(x = year, y = avg_precip * 1500),
-            color = "red",
-            alpha = 0.7) +
-  labs(x = "Year", title = "Portal Project") +
-  scale_y_continuous(name = "Total Biomass (g)",
-                     sec.axis = sec_axis(trans = ~.*1500, name = "Average Precipitation")) +
-  theme_bw()
+Using patchwork to compare biomass with weather:
 
+```{r}
+portal_total_biomass / avg_precip & scale_x_continuous(limits = c(1979, 2025))
 ```
 
 Creating comparison graph function:
@@ -184,4 +169,6 @@ weather_ecol <- function(ecol, e_y, weather, w_y, num) {
 }
 
 weather_ecol(total_biomass_annual, biomass_g, weather_avg, avg_meantemp, 2500)
+
+weather_ecol(total_biomass_annual, biomass_g, weather_avg, avg_precip, 1500)
 ```
