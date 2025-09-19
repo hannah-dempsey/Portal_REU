@@ -1,4 +1,4 @@
-data_comparison
+sonoran_data_comparison
 ================
 Hannah Dempsey
 
@@ -301,6 +301,87 @@ adjusted_portal_biomass
     ## 10  1988 taylori         0 Portal
     ## # ℹ 430,910 more rows
 
+Add proportional biomass column:
+
+``` r
+#divide biomasses for each site by the highest biomass recorded for each species
+max_orpi_biomass <- orpi_biomass%>% 
+  group_by(species) %>% 
+  summarize(max_biomass_g = max(biomass_g))
+
+orpi_biomass <- orpi_biomass %>% 
+  left_join(max_orpi_biomass, join_by(species)) %>% 
+  mutate(prop_biomass = biomass_g / max_biomass_g)
+orpi_biomass
+```
+
+    ## # A tibble: 290 × 6
+    ##     year species      biomass_g site       max_biomass_g prop_biomass
+    ##    <dbl> <chr>            <dbl> <chr>              <dbl>        <dbl>
+    ##  1  1991 albigula        5.49   Organ Pipe        12.8         0.429 
+    ##  2  1991 amplus          0.728  Organ Pipe         1.69        0.430 
+    ##  3  1991 arizonae        0.254  Organ Pipe         0.534       0.476 
+    ##  4  1991 baileyi         0.365  Organ Pipe         4.52        0.0809
+    ##  5  1991 eremicus        1.09   Organ Pipe         1.09        1     
+    ##  6  1991 intermedius     0.0743 Organ Pipe         0.954       0.0779
+    ##  7  1991 merriami        5.62   Organ Pipe        13.3         0.422 
+    ##  8  1991 penicillatus    6.01   Organ Pipe        10.8         0.554 
+    ##  9  1992 albigula        8.62   Organ Pipe        12.8         0.673 
+    ## 10  1992 amplus          0.894  Organ Pipe         1.69        0.527 
+    ## # ℹ 280 more rows
+
+``` r
+max_saguaro_biomass <- saguaro_biomass %>% 
+  group_by(species) %>% 
+  summarize(max_biomass_g = max(biomass_g))
+
+saguaro_biomass <- saguaro_biomass %>% 
+  left_join(max_saguaro_biomass, join_by(species)) %>% 
+  mutate(prop_biomass = biomass_g / max_biomass_g)
+saguaro_biomass
+```
+
+    ## # A tibble: 80 × 6
+    ##     year species      biomass_g site    max_biomass_g prop_biomass
+    ##    <dbl> <chr>            <dbl> <chr>           <dbl>        <dbl>
+    ##  1  1991 albigula        1.59   Saguaro         9.56        0.167 
+    ##  2  1991 amplus          0.125  Saguaro         0.291       0.429 
+    ##  3  1991 baileyi         0.0991 Saguaro         5.35        0.0185
+    ##  4  1991 eremicus        0.0577 Saguaro         0.231       0.25  
+    ##  5  1991 merriami        2.78   Saguaro         5.02        0.553 
+    ##  6  1991 penicillatus    1.47   Saguaro         1.85        0.793 
+    ##  7  1992 albigula        0.531  Saguaro         9.56        0.0556
+    ##  8  1992 amplus          0.0832 Saguaro         0.291       0.286 
+    ##  9  1992 baileyi         1.39   Saguaro         5.35        0.259 
+    ## 10  1992 merriami        5.02   Saguaro         5.02        1     
+    ## # ℹ 70 more rows
+
+``` r
+max_portal_biomass <- adjusted_portal_biomass %>% 
+  group_by(species) %>% 
+  summarize(max_biomass_g = max(biomass_g))
+
+adjusted_portal_biomass <- adjusted_portal_biomass %>% 
+  left_join(max_portal_biomass, join_by(species)) %>% 
+  mutate(prop_biomass = biomass_g / max_biomass_g)
+adjusted_portal_biomass
+```
+
+    ## # A tibble: 430,920 × 6
+    ##     year species biomass_g site   max_biomass_g prop_biomass
+    ##    <dbl> <chr>       <dbl> <chr>          <dbl>        <dbl>
+    ##  1  1979 taylori         0 Portal         0.128            0
+    ##  2  1980 taylori         0 Portal         0.128            0
+    ##  3  1981 taylori         0 Portal         0.128            0
+    ##  4  1982 taylori         0 Portal         0.128            0
+    ##  5  1983 taylori         0 Portal         0.128            0
+    ##  6  1984 taylori         0 Portal         0.128            0
+    ##  7  1985 taylori         0 Portal         0.128            0
+    ##  8  1986 taylori         0 Portal         0.128            0
+    ##  9  1987 taylori         0 Portal         0.128            0
+    ## 10  1988 taylori         0 Portal         0.128            0
+    ## # ℹ 430,910 more rows
+
 Bind dataframes into one:
 
 ``` r
@@ -308,27 +389,27 @@ all_biomass <- bind_rows(saguaro_biomass, orpi_biomass, adjusted_portal_biomass)
 all_biomass
 ```
 
-    ## # A tibble: 431,290 × 4
-    ##     year species      biomass_g site   
-    ##    <dbl> <chr>            <dbl> <chr>  
-    ##  1  1991 albigula        1.59   Saguaro
-    ##  2  1991 amplus          0.125  Saguaro
-    ##  3  1991 baileyi         0.0991 Saguaro
-    ##  4  1991 eremicus        0.0577 Saguaro
-    ##  5  1991 merriami        2.78   Saguaro
-    ##  6  1991 penicillatus    1.47   Saguaro
-    ##  7  1992 albigula        0.531  Saguaro
-    ##  8  1992 amplus          0.0832 Saguaro
-    ##  9  1992 baileyi         1.39   Saguaro
-    ## 10  1992 merriami        5.02   Saguaro
+    ## # A tibble: 431,290 × 6
+    ##     year species      biomass_g site    max_biomass_g prop_biomass
+    ##    <dbl> <chr>            <dbl> <chr>           <dbl>        <dbl>
+    ##  1  1991 albigula        1.59   Saguaro         9.56        0.167 
+    ##  2  1991 amplus          0.125  Saguaro         0.291       0.429 
+    ##  3  1991 baileyi         0.0991 Saguaro         5.35        0.0185
+    ##  4  1991 eremicus        0.0577 Saguaro         0.231       0.25  
+    ##  5  1991 merriami        2.78   Saguaro         5.02        0.553 
+    ##  6  1991 penicillatus    1.47   Saguaro         1.85        0.793 
+    ##  7  1992 albigula        0.531  Saguaro         9.56        0.0556
+    ##  8  1992 amplus          0.0832 Saguaro         0.291       0.286 
+    ##  9  1992 baileyi         1.39   Saguaro         5.35        0.259 
+    ## 10  1992 merriami        5.02   Saguaro         5.02        1     
     ## # ℹ 431,280 more rows
 
 Plotting annual biomass of each species:
 
 ``` r
 all_biomass %>% 
-  filter(species %in% c("albigula", "amplus", "baileyi", "eremicus", "intermedius", "maniculatus", "merriami", "spectabilis", "torridus")) %>% 
-  ggplot(., aes(x = year, y = biomass_g, color = site)) +
+    filter(species %in% c("albigula", "amplus", "baileyi", "eremicus", "intermedius", "merriami", "penicillatus", "spectabilis", "torridus")) %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
     geom_point(alpha = 0.5) +
     geom_line(alpha = 0.5) +
     facet_wrap(~species, scales = "free_y") +
@@ -336,13 +417,85 @@ all_biomass %>%
     theme_bw()
 ```
 
-![](data_comparison_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](data_comparison_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ``` r
 ggsave("../figures/all_biomass.png")
 ```
 
     ## Saving 7 x 5 in image
+
+``` r
+all_biomass %>% 
+  filter(species == "albigula") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "N. albigula Biomass (g)", x = "Year") +
+    theme_bw()
+```
+
+![](data_comparison_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
+
+``` r
+all_biomass %>% 
+  filter(species == "baileyi") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "C. baileyi Biomass (g)", x = "Year") +
+    theme_bw()
+```
+
+![](data_comparison_files/figure-gfm/unnamed-chunk-7-3.png)<!-- -->
+
+``` r
+all_biomass %>% 
+  filter(species == "eremicus") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "C. eremicus Biomass (g)", x = "Year") +
+    theme_bw()
+```
+
+![](data_comparison_files/figure-gfm/unnamed-chunk-7-4.png)<!-- -->
+
+``` r
+all_biomass %>% 
+  filter(species == "merriami") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "D. merriami Biomass (g)", x = "Year") +
+    theme_bw()
+```
+
+![](data_comparison_files/figure-gfm/unnamed-chunk-7-5.png)<!-- -->
+
+``` r
+all_biomass %>% 
+  filter(species == "penicillatus") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "C. penicillatus Biomass (g)", x = "Year") +
+    theme_bw()
+```
+
+![](data_comparison_files/figure-gfm/unnamed-chunk-7-6.png)<!-- -->
+
+``` r
+all_biomass %>% 
+  filter(species == "torridus") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "O. torridus Biomass (g)", x = "Year") +
+    theme_bw()
+```
+
+![](data_comparison_files/figure-gfm/unnamed-chunk-7-7.png)<!-- -->
 
 #### By community:
 
@@ -488,6 +641,79 @@ adjusted_portal_total_biomass
     ## 10  1988     2052. Portal
     ## # ℹ 35 more rows
 
+Add proportional biomass column:
+
+``` r
+#divide biomasses for each site by the highest annual biomass recorded
+orpi_total_biomass <- orpi_total_biomass %>% 
+  mutate(prop_biomass = biomass_g / max(biomass_g))
+orpi_total_biomass
+```
+
+    ## # A tibble: 33 × 4
+    ##     year biomass_g site  prop_biomass
+    ##    <dbl>     <dbl> <chr>        <dbl>
+    ##  1  1991     19.6  Organ        0.625
+    ##  2  1992     29.4  Organ        0.935
+    ##  3  1993     29.9  Organ        0.953
+    ##  4  1994     31.4  Organ        1    
+    ##  5  1995     20.5  Organ        0.652
+    ##  6  1996     19.3  Organ        0.615
+    ##  7  1997      4.33 Organ        0.138
+    ##  8  1998      4.40 Organ        0.140
+    ##  9  1999      7.09 Organ        0.226
+    ## 10  2000     13.2  Organ        0.421
+    ## # ℹ 23 more rows
+
+``` r
+saguaro_total_biomass <- saguaro_total_biomass %>% 
+  mutate(prop_biomass = biomass_g / max(biomass_g))
+saguaro_total_biomass
+```
+
+    ## # A tibble: 18 × 4
+    ##     year biomass_g site    prop_biomass
+    ##    <dbl>     <dbl> <chr>          <dbl>
+    ##  1  1991      6.12 Saguaro        0.351
+    ##  2  1992      8.94 Saguaro        0.513
+    ##  3  1993     17.4  Saguaro        1    
+    ##  4  1994     12.9  Saguaro        0.740
+    ##  5  1995      6.30 Saguaro        0.361
+    ##  6  1996      5.85 Saguaro        0.335
+    ##  7  1997      4.85 Saguaro        0.278
+    ##  8  1998      5.34 Saguaro        0.306
+    ##  9  1999      7.38 Saguaro        0.423
+    ## 10  2000      2.93 Saguaro        0.168
+    ## 11  2001      1.82 Saguaro        0.104
+    ## 12  2002      1.98 Saguaro        0.114
+    ## 13  2003      3.97 Saguaro        0.228
+    ## 14  2004     15.1  Saguaro        0.866
+    ## 15  2005     10.2  Saguaro        0.587
+    ## 16  2006     17.3  Saguaro        0.990
+    ## 17  2007     16.3  Saguaro        0.935
+    ## 18  2008      9.74 Saguaro        0.559
+
+``` r
+adjusted_portal_total_biomass <- adjusted_portal_total_biomass %>% 
+  mutate(prop_biomass = biomass_g / max(biomass_g))
+adjusted_portal_total_biomass
+```
+
+    ## # A tibble: 45 × 4
+    ##     year biomass_g site   prop_biomass
+    ##    <dbl>     <dbl> <chr>         <dbl>
+    ##  1  1979     2747. Portal        0.293
+    ##  2  1980     3261. Portal        0.348
+    ##  3  1981     3524. Portal        0.376
+    ##  4  1982     5693. Portal        0.608
+    ##  5  1983     4865. Portal        0.519
+    ##  6  1984     2907. Portal        0.310
+    ##  7  1985     3492. Portal        0.373
+    ##  8  1986     3744. Portal        0.400
+    ##  9  1987     4746. Portal        0.507
+    ## 10  1988     2052. Portal        0.219
+    ## # ℹ 35 more rows
+
 Bind dataframes into one:
 
 ``` r
@@ -498,7 +724,7 @@ Plotting community biomass:
 
 ``` r
 #facet_wrapped
-ggplot(all_total_biomass, aes(x = year, y = biomass_g)) +
+ggplot(all_total_biomass, aes(x = year, y = prop_biomass)) +
   geom_point() +
   geom_line() +
   facet_wrap(~site, scales = "free_y", ncol = 1) +
@@ -506,7 +732,7 @@ ggplot(all_total_biomass, aes(x = year, y = biomass_g)) +
   theme_bw()
 ```
 
-![](data_comparison_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](data_comparison_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ``` r
 ggsave("../figures/all_total_biomass.png")
@@ -516,17 +742,17 @@ ggsave("../figures/all_total_biomass.png")
 
 ``` r
 #by color
-ggplot(all_total_biomass, aes(x = year, y = biomass_g, color = site)) +
-  geom_point() +
-  geom_line() +
+ggplot(all_total_biomass, aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+  geom_line(alpha = 0.5) +
   labs(y = "Total Biomass (g)", x = "Year") +
   theme_bw()
 ```
 
-![](data_comparison_files/figure-gfm/unnamed-chunk-10-2.png)<!-- -->
+![](data_comparison_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
 
 ``` r
-#just saguaro and orpi
+#just saguaro and orpi NOT PROPORTIONS
 all_total_biomass %>% 
   filter(site != "Portal") %>% 
   ggplot(., aes(x = year, y = biomass_g, color = site)) +
@@ -536,7 +762,7 @@ all_total_biomass %>%
   theme_bw()
 ```
 
-![](data_comparison_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](data_comparison_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ``` r
 ggsave("../figures/saguaro_orpi_total_biomass.png")
@@ -766,19 +992,26 @@ Plotting abundance of each species:
 
 ``` r
 all_abund %>% 
-  filter(species %in% c("albigula", "amplus", "baileyi", "eremicus", "intermedius", "maniculatus", "merriami", "spectabilis", "torridus")) %>% 
+  filter(species %in% c("albigula", "amplus", "baileyi", "eremicus", "intermedius", "merriami", "penicillatus", "spectabilis", "torridus")) %>% 
   ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
     geom_point(alpha = 0.5) +
     geom_line(alpha = 0.5) +
     facet_wrap(~species, scales = "free_y") +
     labs(y = "Abundance per Trapnight", x = "Year") +
+    scale_y_log10() +
     theme_bw()
 ```
 
-![](data_comparison_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+    ## Warning in scale_y_log10(): log-10 transformation introduced infinite values.
+    ## log-10 transformation introduced infinite values.
+
+![](data_comparison_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 ``` r
 ggsave("../figures/all_abund.png")
 ```
 
     ## Saving 7 x 5 in image
+
+    ## Warning in scale_y_log10(): log-10 transformation introduced infinite values.
+    ## log-10 transformation introduced infinite values.

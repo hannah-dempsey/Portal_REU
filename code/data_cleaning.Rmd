@@ -165,3 +165,20 @@ jornada_clean <- jornada %>%
 
 write_csv(jornada_clean, "../data_clean/jornada_clean.csv")
 ```
+
+## Sevilleta National Wildlife Refuge:
+
+```{r}
+sevilleta <- read_csv("../data_raw/SEV008_rodentpopns.csv")
+```
+
+Cleaning the dataset:
+
+```{r}
+sevilleta_clean <- sevilleta %>% 
+  select(1, 4:5, 7:8, 12) %>% 
+  rename(mass_g = mass) %>% 
+  filter(recap == "n")
+
+write_csv(sevilleta_clean, "../data_clean/sevilleta_clean.csv")
+```

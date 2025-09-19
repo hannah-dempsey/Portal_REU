@@ -4,7 +4,7 @@ author: "Hannah Dempsey"
 output: github_document
 ---
 
-# Comparing Field Site Statistics
+# Comparing Sonoran Sites with Portal
 
 Set up:
 
@@ -67,7 +67,7 @@ adjusted_portal_biomass <- adjusted_portal_biomass %>%
 adjusted_portal_biomass
 ```
 
-Adding site column to all dataframes:
+Add site column to all dataframes:
 
 ```{r}
 #loading in the rest of the data
@@ -88,6 +88,38 @@ adjusted_portal_biomass <- adjusted_portal_biomass %>%
 adjusted_portal_biomass
 ```
 
+Add proportional biomass column:
+
+```{r}
+#divide biomasses for each site by the highest biomass recorded for each species
+max_orpi_biomass <- orpi_biomass%>% 
+  group_by(species) %>% 
+  summarize(max_biomass_g = max(biomass_g))
+
+orpi_biomass <- orpi_biomass %>% 
+  left_join(max_orpi_biomass, join_by(species)) %>% 
+  mutate(prop_biomass = biomass_g / max_biomass_g)
+orpi_biomass
+
+max_saguaro_biomass <- saguaro_biomass %>% 
+  group_by(species) %>% 
+  summarize(max_biomass_g = max(biomass_g))
+
+saguaro_biomass <- saguaro_biomass %>% 
+  left_join(max_saguaro_biomass, join_by(species)) %>% 
+  mutate(prop_biomass = biomass_g / max_biomass_g)
+saguaro_biomass
+
+max_portal_biomass <- adjusted_portal_biomass %>% 
+  group_by(species) %>% 
+  summarize(max_biomass_g = max(biomass_g))
+
+adjusted_portal_biomass <- adjusted_portal_biomass %>% 
+  left_join(max_portal_biomass, join_by(species)) %>% 
+  mutate(prop_biomass = biomass_g / max_biomass_g)
+adjusted_portal_biomass
+```
+
 Bind dataframes into one:
 
 ```{r}
@@ -99,14 +131,65 @@ Plotting annual biomass of each species:
 
 ```{r}
 all_biomass %>% 
-  filter(species %in% c("albigula", "amplus", "baileyi", "eremicus", "intermedius", "maniculatus", "merriami", "spectabilis", "torridus")) %>% 
-  ggplot(., aes(x = year, y = biomass_g, color = site)) +
+    filter(species %in% c("albigula", "amplus", "baileyi", "eremicus", "intermedius", "merriami", "penicillatus", "spectabilis", "torridus")) %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
     geom_point(alpha = 0.5) +
     geom_line(alpha = 0.5) +
     facet_wrap(~species, scales = "free_y") +
     labs(y = "Biomass (g)", x = "Year") +
     theme_bw()
+
+
 ggsave("../figures/all_biomass.png")
+
+
+all_biomass %>% 
+  filter(species == "albigula") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "N. albigula Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass %>% 
+  filter(species == "baileyi") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "C. baileyi Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass %>% 
+  filter(species == "eremicus") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "C. eremicus Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass %>% 
+  filter(species == "merriami") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "D. merriami Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass %>% 
+  filter(species == "penicillatus") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "C. penicillatus Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass %>% 
+  filter(species == "torridus") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "O. torridus Biomass (g)", x = "Year") +
+    theme_bw()
 ```
 
 #### By community:
@@ -125,7 +208,7 @@ adjusted_portal_total_biomass <- portal_total_biomass %>%
 adjusted_portal_total_biomass
 ```
 
-Adding site column to all dataframes:
+Add site column to all dataframes:
 
 ```{r}
 #loading in the rest of the data
@@ -146,6 +229,23 @@ adjusted_portal_total_biomass <- adjusted_portal_total_biomass %>%
 adjusted_portal_total_biomass
 ```
 
+Add proportional biomass column:
+
+```{r}
+#divide biomasses for each site by the highest annual biomass recorded
+orpi_total_biomass <- orpi_total_biomass %>% 
+  mutate(prop_biomass = biomass_g / max(biomass_g))
+orpi_total_biomass
+
+saguaro_total_biomass <- saguaro_total_biomass %>% 
+  mutate(prop_biomass = biomass_g / max(biomass_g))
+saguaro_total_biomass
+
+adjusted_portal_total_biomass <- adjusted_portal_total_biomass %>% 
+  mutate(prop_biomass = biomass_g / max(biomass_g))
+adjusted_portal_total_biomass
+```
+
 Bind dataframes into one:
 
 ```{r}
@@ -156,7 +256,7 @@ Plotting community biomass:
 
 ```{r}
 #facet_wrapped
-ggplot(all_total_biomass, aes(x = year, y = biomass_g)) +
+ggplot(all_total_biomass, aes(x = year, y = prop_biomass)) +
   geom_point() +
   geom_line() +
   facet_wrap(~site, scales = "free_y", ncol = 1) +
@@ -165,15 +265,15 @@ ggplot(all_total_biomass, aes(x = year, y = biomass_g)) +
 ggsave("../figures/all_total_biomass.png")
 
 #by color
-ggplot(all_total_biomass, aes(x = year, y = biomass_g, color = site)) +
-  geom_point() +
-  geom_line() +
+ggplot(all_total_biomass, aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+  geom_line(alpha = 0.5) +
   labs(y = "Total Biomass (g)", x = "Year") +
   theme_bw()
 ```
 
 ```{r}
-#just saguaro and orpi
+#just saguaro and orpi NOT PROPORTIONS
 all_total_biomass %>% 
   filter(site != "Portal") %>% 
   ggplot(., aes(x = year, y = biomass_g, color = site)) +
@@ -241,12 +341,334 @@ Plotting abundance of each species:
 
 ```{r}
 all_abund %>% 
-  filter(species %in% c("albigula", "amplus", "baileyi", "eremicus", "intermedius", "maniculatus", "merriami", "spectabilis", "torridus")) %>% 
+  filter(species %in% c("albigula", "amplus", "baileyi", "eremicus", "intermedius", "merriami", "penicillatus", "spectabilis", "torridus")) %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    facet_wrap(~species, scales = "free_y") +
+    labs(y = "Abundance per Trapnight", x = "Year") +
+    scale_y_log10() +
+    theme_bw()
+ggsave("../figures/all_abund.png")
+
+all_abund %>% 
+  filter(species == "baileyi") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "C. baileyi Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
+all_abund %>% 
+  filter(species == "torridus") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "O. torridus Abundance per Trapnight", x = "Year") +
+    theme_bw()
+```
+
+# Comparing Chihuahuan Sites with Portal
+
+### Biomass Data
+
+#### By species
+
+Add site column to dataframes:
+
+```{r}
+#Read in data
+sevilleta_biomass <- read_csv("../data_clean/sevilleta_biomass.csv")
+jornada_biomass <- read_csv("../data_clean/jornada_biomass.csv")
+
+sevilleta_biomass <- sevilleta_biomass %>% 
+  mutate(site = "Sevilleta")
+
+jornada_biomass <- jornada_biomass %>% 
+  mutate(site = "Jornada")
+```
+
+Add proportional biomass column:
+
+```{r}
+#divide biomasses for each site by the highest biomass recorded for each species
+max_sevilleta_biomass <- sevilleta_biomass%>% 
+  group_by(species) %>% 
+  summarize(max_biomass_g = max(biomass_g))
+
+sevilleta_biomass <- sevilleta_biomass %>% 
+  left_join(max_sevilleta_biomass, join_by(species)) %>% 
+  mutate(prop_biomass = biomass_g / max_biomass_g)
+sevilleta_biomass
+
+max_jornada_biomass <- jornada_biomass%>% 
+  group_by(species) %>% 
+  summarize(max_biomass_g = max(biomass_g))
+
+jornada_biomass <- jornada_biomass %>% 
+  left_join(max_jornada_biomass, join_by(species)) %>% 
+  mutate(prop_biomass = biomass_g / max_biomass_g)
+jornada_biomass
+```
+
+Bind dataframes into one:
+
+```{r}
+all_biomass_2 <- bind_rows(sevilleta_biomass, jornada_biomass, adjusted_portal_biomass)
+all_biomass_2
+```
+
+Plotting annual biomass of each species:
+
+```{r}
+all_biomass_2 %>% 
+   filter(species %in% c("arenicola", "flavus", "hispidus", "leucodon", "leucogaster", "leucopus", "maniculatus", "megalotis", "merriami", "micropus", "ordii", "spectabilis", "spilosoma")) %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    facet_wrap(~species) +
+    labs(y = "Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass_2 %>% 
+  filter(species == "arenicola") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "O. arenicola Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass_2 %>% 
+  filter(species == "flavus") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "P. flavus Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass_2 %>% 
+  filter(species == "leucogaster") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "O. leucogaster Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass_2 %>% 
+  filter(species == "leucopus") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "P. leucopus Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass_2 %>% 
+  filter(species == "maniculatus") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "P. maniculatus Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass_2 %>% 
+  filter(species == "megalotis") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "R. megalotis Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass_2 %>% 
+  filter(species == "merriami") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "D. merriami Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass_2 %>% 
+  filter(species == "ordii") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "D. ordii Biomass (g)", x = "Year") +
+    theme_bw()
+
+all_biomass_2 %>% 
+  filter(species == "spectabilis") %>% 
+  ggplot(., aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "D. spectabilis Biomass (g)", x = "Year") +
+    theme_bw()
+```
+
+#### By community
+
+Add site column to all dataframes:
+
+```{r}
+#loading in the rest of the data
+sevilleta_total_biomass <- read_csv("../data_clean/sevilleta_total_biomass.csv")
+jornada_total_biomass <- read_csv("../data_clean/jornada_total_biomass.csv")
+
+#adding site column to each dataframe
+sevilleta_total_biomass <- sevilleta_total_biomass %>% 
+  mutate(site = "Sevilleta")
+sevilleta_total_biomass
+
+jornada_total_biomass <- jornada_total_biomass %>% 
+   mutate(site = "Jornada")
+jornada_total_biomass
+```
+
+Add proportional biomass column:
+
+```{r}
+sevilleta_total_biomass <- sevilleta_total_biomass %>% 
+  mutate(prop_biomass = biomass_g / max(biomass_g))
+sevilleta_total_biomass
+
+jornada_total_biomass <- jornada_total_biomass %>% 
+  mutate(prop_biomass = biomass_g / max(biomass_g))
+jornada_total_biomass
+```
+
+Bind dataframes into one:
+
+```{r}
+all_total_biomass_2 <- bind_rows(sevilleta_total_biomass, jornada_total_biomass, adjusted_portal_total_biomass)
+```
+
+Plotting community biomass:
+
+```{r}
+#facet_wrapped
+ggplot(all_total_biomass_2, aes(x = year, y = prop_biomass)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~site, scales = "free_y", ncol = 1) +
+  labs(y = "Total Biomass (g)", x = "Year") +
+  theme_bw()
+ggsave("../figures/all_total_biomass.png")
+
+#by color
+ggplot(all_total_biomass_2, aes(x = year, y = prop_biomass, color = site)) +
+  geom_point(alpha = 0.5) +
+  geom_line(alpha = 0.5) +
+  labs(y = "Total Biomass (g)", x = "Year") +
+  theme_bw()
+```
+
+### Abundance Data
+
+Loading in datasets:
+
+```{r}
+sevilleta_abund <- read_csv("../data_clean/sevilleta_abund_trapnights.csv")
+jornada_abund <- read_csv("../data_clean/jornada_abund_trapnights.csv")
+
+#removing superfluous columns
+sevilleta_abund <- sevilleta_abund %>% 
+  select(1,2,5)
+sevilleta_abund
+
+jornada_abund <- jornada_abund %>% 
+  select(1,2,5)
+jornada_abund
+
+#adding site column to each dataframe
+sevilleta_abund <- sevilleta_abund %>% 
+  mutate(site = "Sevilleta")
+sevilleta_abund
+
+jornada_abund <- jornada_abund %>% 
+  mutate(site = "Jornada")
+jornada_abund
+```
+
+Bind dataframes into one:
+
+```{r}
+all_abund_2 <- bind_rows(sevilleta_abund, jornada_abund, portal_abund)
+all_abund_2
+```
+
+Plotting abundance of each species:
+
+```{r}
+all_abund_2 %>% 
+  filter(species %in% c("arenicola", "flavus", "hispidus", "leucodon", "leucogaster", "leucopus", "maniculatus", "megalotis", "merriami", "micropus", "ordii", "spectabilis", "spilosoma")) %>% 
   ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
     geom_point(alpha = 0.5) +
     geom_line(alpha = 0.5) +
     facet_wrap(~species, scales = "free_y") +
     labs(y = "Abundance per Trapnight", x = "Year") +
     theme_bw()
-ggsave("../figures/all_abund.png")
+
+all_abund_2 %>% 
+  filter(species == "flavus") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "P. flavus Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
+all_abund_2 %>% 
+  filter(species == "leucogaster") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "O. Lecuogaster Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
+
+all_abund_2 %>% 
+  filter(species == "leucopus") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "P. leucopus Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
+all_abund_2 %>% 
+  filter(species == "maniculatus") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "P. maniculatus Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
+all_abund_2 %>% 
+  filter(species == "megalotis") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "R. megalotis Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
+all_abund_2 %>% 
+  filter(species == "merriami") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "D. merriami Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
+all_abund_2 %>% 
+  filter(species == "ordii") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "D. ordii Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
+all_abund_2 %>% 
+  filter(species == "spectabilis") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+  geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "D. spectabilis Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
 ```

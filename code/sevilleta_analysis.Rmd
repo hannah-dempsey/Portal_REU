@@ -1,27 +1,25 @@
 ---
-title: "jornada_analysis"
+title: "sevilleta_analysis"
 author: "Hannah Dempsey"
 output: github_document
 ---
-
-# Jornada Basin Analysis
 
 Set up:
 
 ```{r}
 library(tidyverse)
-jornada_clean <- read_csv("../data_clean/jornada_clean.csv")
+sevilleta_clean <- read_csv("../data_clean/sevilleta_clean.csv")
 ```
 
 Change species codes to genus and species names:
 
 ```{r}
-jornada_species <- read_csv("../data_clean/sevilleta_species.csv")
+sevilleta_species <- read_csv("../data_clean/sevilleta_species.csv")
 
-jornada_clean <- jornada_clean %>%
+sevilleta_clean <- sevilleta_clean %>%
   rename(species_code = species) %>% 
-  inner_join(jornada_species, join_by(species_code))
-jornada_clean
+  inner_join(sevilleta_species, join_by(species_code))
+sevilleta_clean
 ```
 
 ### Abundance Data
@@ -29,30 +27,29 @@ jornada_clean
 Calculate the annual abundance for each species per trapnight:
 
 ```{r}
-rodents_per_trapnight <- jornada_clean %>% 
+rodents_per_trapnight <- sevilleta_clean %>% 
   group_by(year, species) %>%
   summarize(abundance = n()) %>% 
-  #from metadata: 3 nights with 3 webs of 144 traps
-  mutate(trap_nights = 3 * 432,
+  #from metadata: 3 nights with 3 webs of 145 traps
+  mutate(trap_nights = 3 * 435,
          abund_per_trapnight = abundance / trap_nights)
+  
 
 #save dataframe for comparison
-write_csv(rodents_per_trapnight, "../data_clean/jornada_abund_trapnights.csv")
+write_csv(rodents_per_trapnight, "../data_clean/sevilleta_abund_trapnights.csv")
 ```
 
 Plotting abundance per trapnight:
 
 ```{r}
 rodents_per_trapnight %>% 
-  filter(species != "boylii" & species != "maniculatus" & species!= "musculus") %>% 
+  filter(species != "musculus" & species != "spilosoma") %>% 
   ggplot(., aes(x = year, y = abund_per_trapnight)) +
   geom_point() +
   geom_line() +
   facet_wrap(~ species) +
-  labs(y = "Rodent Abundance per Trapnight", x = "Year", title = "Jornada Basin") +
+  labs(y = "Rodent Abundance per Trapnight", x = "Year", title = "Sevilleta National Wildlife Refuge") +
   theme_bw()
-
-#DO THE GGSAVE
 ```
 
 ### Biomass Data
@@ -60,9 +57,9 @@ rodents_per_trapnight %>%
 Calculating average mass for each species:
 
 ```{r}
-rodent_mass <- jornada_clean %>% 
+rodent_mass <- sevilleta_clean %>% 
   group_by(species) %>% 
-  summarize(avg_mass_g = mean(weight_g, na.rm = T))
+  summarize(avg_mass_g = mean(mass_g, na.rm = T))
 rodent_mass
 ```
 
@@ -76,19 +73,19 @@ biomass_annual <- rodents_per_trapnight %>%
 biomass_annual
 
 #save dataframe for comparison
-write_csv(biomass_annual, "../data_clean/jornada_biomass.csv")
+write_csv(biomass_annual, "../data_clean/sevilleta_biomass.csv")
 ```
 
 Plotting annual biomass of each species:
 
 ```{r}
 biomass_annual %>% 
- filter(species != "boylii" & species != "maniculatus" & species!= "musculus") %>% 
+  filter(species != "musculus" & species != "spilosoma") %>% 
   ggplot(., aes(x = year, y = biomass_g)) +
   geom_point() +
   geom_line() +
   facet_wrap(~species) +
-  labs(y = "Biomass (g)", x = "Year", title = "Jornada Basin") +
+  labs(y = "Biomass (g)", x = "Year", title = "Sevilleta National Wildlife Refuge") +
   theme_bw()
 
 #DO THE GGSAVE
@@ -99,11 +96,11 @@ Calculating annual community biomass:
 ```{r}
 total_biomass_annual <- biomass_annual %>% 
   group_by(year) %>% 
-  summarize(biomass_g = sum(biomass_g))
+  summarize(biomass_g = sum(biomass_g, na.rm = T))
 total_biomass_annual
 
 #save dataframe for comparison
-write_csv(total_biomass_annual, "../data_clean/jornada_total_biomass.csv")
+write_csv(total_biomass_annual, "../data_clean/sevilleta_total_biomass.csv")
 ```
 
 Plotting annual community biomass:
@@ -113,6 +110,5 @@ ggplot(total_biomass_annual, aes(x = year, y = biomass_g)) +
   geom_point() +
   geom_line() +
   labs(y = "Total Biomass (g)", x = "Year", title = "Jornada Basin") +
-  scale_x_continuous(breaks = seq(min(total_biomass_annual$year), max(total_biomass_annual$year),2)) +
   theme_bw()
 ```
