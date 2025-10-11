@@ -1,0 +1,42 @@
+---
+title: "ARIMA"
+output: html_document
+---
+
+Set up:
+
+```{r}
+#install.packages("forecast")
+library(forecast)
+library(tidyverse)
+orpi_biomass <- read_csv("../data_clean/orpi_total_biomass.csv")
+saguaro_biomass <- read_csv("../data_clean/saguaro_total_biomass.csv")
+```
+
+Convert into time series format:
+
+```{r}
+orpi_ts <- ts(data = orpi_biomass$biomass_g, start = 1991, end = 2023, frequency = 1)
+```
+
+Run auto-arima function/messing around:
+
+```{r}
+auto_fit <- auto.arima(orpi_ts)
+summary(auto_fit)
+plot(auto_fit)
+
+autoplot(auto_fit)
+autoplot(orpi_ts)
+```
+
+```{r}
+combo_biomass <- orpi_biomass %>% 
+  inner_join(saguaro_biomass, join_by(year)) %>% 
+  rename(orpi_biomass = biomass_g.x,
+         saguaro_biomass = biomass_g.y)
+
+ggplot(combo_biomass, aes(x = orpi_biomass, y = saguaro_biomass)) +
+  geom_point() +
+  theme_bw()
+```

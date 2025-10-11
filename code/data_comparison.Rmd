@@ -352,11 +352,43 @@ all_abund %>%
 ggsave("../figures/all_abund.png")
 
 all_abund %>% 
+  filter(species == "albigula") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "N. Albigula Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
+all_abund %>% 
   filter(species == "baileyi") %>% 
   ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
     geom_point(alpha = 0.5) +
     geom_line(alpha = 0.5) +
     labs(y = "C. baileyi Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
+all_abund %>% 
+  filter(species == "eremicus") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "P eremicus Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
+all_abund %>% 
+  filter(species == "merriami") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "D. merriami Abundance per Trapnight", x = "Year") +
+    theme_bw()
+
+all_abund %>% 
+  filter(species == "penicillatus") %>% 
+  ggplot(., aes(x = year, y = abund_per_trapnight, color = site)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    labs(y = "C. penicillatus Abundance per Trapnight", x = "Year") +
     theme_bw()
 
 all_abund %>% 
